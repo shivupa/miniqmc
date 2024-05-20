@@ -39,10 +39,10 @@ bool isCUDAPtrDevice(const T* ptr)
 {
   cudaPointerAttributes attr;
   cudaErrorCheck(cudaPointerGetAttributes(&attr, ptr), "cudaPointerGetAttributes failed!");
-#if (CUDART_VERSION < 10000)
-  return attr.memoryType == cudaMemoryTypeDevice;
-#else
+#if (CUDART_VERSION >= 10000 || HIP_VERSION_MAJOR >= 6)
   return attr.type == cudaMemoryTypeDevice;
+#else
+  return attr.memoryType == cudaMemoryTypeDevice;
 #endif
 }
 
