@@ -123,7 +123,7 @@ ctest_submit(PARTS Test)
 # Submit the results to oblivion
 set(CTEST_DROP_METHOD "https")
 set(CTEST_DROP_SITE "cdash.qmcpack.org")
-set(CTEST_DROP_LOCATION "/CDash/submit.php?project=miniQMC")
+set(CTEST_DROP_LOCATION "/submit.php?project=miniQMC")
 set(CTEST_DROP_SITE_CDASH TRUE)
 set(DROP_SITE_CDASH TRUE)
 ctest_submit(PARTS Configure Build Test)
