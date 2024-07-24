@@ -196,6 +196,8 @@ endif()
 ######################################################################
 # Set the compiler specific options/flags
 ######################################################################
+include(TestCXXMainCompiles)
+TestCXXMainCompiles("Before_Customization")
 if(CMAKE_TOOLCHAIN_FILE)
   message(STATUS "Using ${CMAKE_TOOLCHAIN_FILE} toolchain ")
 else(CMAKE_TOOLCHAIN_FILE)
@@ -237,7 +239,7 @@ else(CMAKE_TOOLCHAIN_FILE)
   endif()
 
   include(inspectCompiler)
-
+  TestCXXMainCompiles("After_Customization")
 endif(CMAKE_TOOLCHAIN_FILE)
 
 # requires C++17 standard
@@ -298,6 +300,7 @@ if(ENABLE_OFFLOAD AND DEFINED OPENMP_OFFLOAD_COMPILE_OPTIONS)
     # when using OpenMP offload to AMD GPU together with HIP.
     set(QMC_OFFLOAD_MEM_ASSOCIATED_DEFAULT ON)
   endif()
+  TestCXXMainCompiles("With_OpenMP")
 endif()
 # Some OpenMP offload runtime libraries have composibility issue with a vendor native runtime.
 # A workaround is making the vendor native runtime responsible for memory allocations and OpenMP associate/disassocate them.
@@ -384,17 +387,6 @@ else(QMC_MPI)
   set(HAVE_MPI 0)
   message(STATUS "MPI is disabled")
 endif(QMC_MPI)
-
-#-------------------------------------------------------------------
-# final test for compile options before searching for libraries
-#-------------------------------------------------------------------
-include(CheckCXXSourceCompiles)
-check_cxx_source_compiles("int main(){}" TEST_CXX_COMPILE_MAIN)
-if (NOT TEST_CXX_COMPILE_MAIN)
-  unset(TEST_CXX_COMPILE_MAIN CACHE)
-  message(FATAL_ERROR "Failed in compiling a main() function likely due to incorrect compile options. "
-                      "Check error in \"${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CMakeError.log\".")
-endif()
 
 ####################################################################
 #First check the required libraries. Abort if these are not found.
@@ -602,7 +594,7 @@ if(NOT "${ENABLE_SANITIZER}" STREQUAL "none")
   endif()
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_SAN}")
-
+  TestCXXMainCompiles("With_Sanitizers")
 endif()
 
 ############################################################
