@@ -141,6 +141,7 @@ set(QMC_BUILD_STATIC
 set(ENABLE_TIMERS
     1
     CACHE BOOL "Enable internal timers")
+option(QMC_AD "Enable/disable AD" ON)
 option(ENABLE_OFFLOAD "Enable OpenMP offload" OFF)
 option(QMC_ENABLE_ROCM "Enable GPU support through ROCM" OFF)
 if(QMC_ENABLE_ROCM)
@@ -191,6 +192,14 @@ find_package(Git)
 
 if(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
   set(IS_GIT_PROJECT 1)
+endif()
+
+if (QMC_AD)
+    find_package(Enzyme REQUIRED CONFIG)
+    message(STATUS "QMC_AD found dir ${Enzyme_DIR}")
+    message(STATUS "QMC_AD found ${Enzyme_FOUND}")
+    get_property(importTargetsAfter DIRECTORY "${CMAKE_SOURCE_DIR}" PROPERTY IMPORTED_TARGETS)
+    message(STATUS "QMC_AD imported targets ${importTargetsAfter}")
 endif()
 
 ######################################################################

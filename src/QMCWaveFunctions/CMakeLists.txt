@@ -21,4 +21,8 @@ target_link_libraries(qmcwfs PUBLIC qmcparticle)
 
 target_link_libraries(qmcwfs PRIVATE platform_LA)
 
+if(QMC_AD)
+  target_link_libraries(qmcwfs PRIVATE LLDEnzymeFlags)
+endif()
+
 subdirs(tests)
