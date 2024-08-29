@@ -9,7 +9,7 @@
 #// File created by: Ye Luo, yeluo@anl.gov, Argonne National Laboratory
 #//////////////////////////////////////////////////////////////////////////////////////
 
-set(WFS_SRC einspline_spo_omp.cpp WaveFunction.cpp SPOSet_builder.cpp DiracDeterminant.cpp DiracDeterminantRef.cpp)
+set(WFS_SRC einspline_spo_omp.cpp WaveFunction.cpp SPOSet_builder.cpp DiracDeterminant.cpp DiracDeterminantRef.cpp Jastrow/BsplineFunctor.cpp)
 
 if(USE_OBJECT_TARGET)
   add_library(qmcwfs OBJECT ${WFS_SRC})
