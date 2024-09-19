@@ -34,13 +34,19 @@ namespace qmcplusplus
 {
   namespace qmcad{
  
-      template<typename RT, typename... Args>
-      RT __enzyme_autodiff(void*, Args...);
+      int enzyme_dup;
+      int enzyme_dupnoneed;
+      int enzyme_out;
+      int enzyme_const;
+
+      template<typename... Args>
+      void __enzyme_autodiff(void (*)(const real_type &, const real_type &, const real_type *, const TinyVector<real_type, 16> &, const real_type &, real_type &), Args...);
   
   //    using real_type = OptimizableFunctorBase::real_type;
-      real_type BSpline_functor_evaluate_wrapper(const real_type& DeltaRInv, const real_type& cutoff_radius , const aligned_vector<real_type>& SplineCoefs, const TinyVector<real_type, 16>& A, const real_type& r) {
+      void BSpline_functor_evaluate_wrapper(const real_type& DeltaRInv, const real_type& cutoff_radius , const real_type* SplineCoefs, const TinyVector<real_type, 16>& A, const real_type& r, real_type& u) {
+          u = 0.0;
           if (r >= cutoff_radius)
-            return 0.0;
+            return;
           real_type r_timesRinv = r * DeltaRInv;
           real_type ipart, t;
           t     = std::modf(r_timesRinv, &ipart);
@@ -51,7 +57,7 @@ namespace qmcplusplus
           tp[2] = t;
           tp[3] = 1.0;
           // clang-format off
-          return
+          u = 
             (SplineCoefs[i+0]*(A[ 0]*tp[0] + A[ 1]*tp[1] + A[ 2]*tp[2] + A[ 3]*tp[3])+
              SplineCoefs[i+1]*(A[ 4]*tp[0] + A[ 5]*tp[1] + A[ 6]*tp[2] + A[ 7]*tp[3])+
              SplineCoefs[i+2]*(A[ 8]*tp[0] + A[ 9]*tp[1] + A[10]*tp[2] + A[11]*tp[3])+
@@ -59,12 +65,12 @@ namespace qmcplusplus
 
        }
   
-      real_type BSpline_functor_dudr_wrapper(const real_type& DeltaRInv, const real_type& cutoff_radius , const aligned_vector<real_type>& SplineCoefs, const TinyVector<real_type, 16>& A, const real_type& r) {
-      return __enzyme_autodiff<real_type>((void*)BSpline_functor_evaluate_wrapper, qmcad::enzyme_const, DeltaRInv, qmcad::enzyme_const, cutoff_radius, qmcad::enzyme_const, SplineCoefs, qmcad::enzyme_const, A, qmcad::enzyme_out, r);
+      void BSpline_functor_dudr_wrapper(const real_type& DeltaRInv, const real_type& cutoff_radius , const real_type* SplineCoefs, const TinyVector<real_type, 16>& A, const real_type& r, real_type& u, real_type& du_dr) {
+      __enzyme_autodiff((void*)BSpline_functor_evaluate_wrapper, qmcad::enzyme_const, DeltaRInv, qmcad::enzyme_const, cutoff_radius, qmcad::enzyme_const, SplineCoefs, qmcad::enzyme_const, A, qmcad::enzyme_dup, r, du_dr);
       }
   
-      real_type BSpline_functor_d2udr2_wrapper(const real_type& DeltaRInv, const real_type& cutoff_radius , const aligned_vector<real_type>& SplineCoefs, const TinyVector<real_type, 16>& A, const real_type& r) {
-      return __enzyme_autodiff<real_type>((void*)BSpline_functor_evaluate_wrapper, qmcad::enzyme_const, DeltaRInv, qmcad::enzyme_const, cutoff_radius, qmcad::enzyme_const, SplineCoefs, qmcad::enzyme_const, A, qmcad::enzyme_out, r);
+      void BSpline_functor_d2udr2_wrapper(const real_type& DeltaRInv, const real_type& cutoff_radius , const real_type* SplineCoefs, const TinyVector<real_type, 16>& A, const real_type& r, real_type& u, real_type& du_dr, real_type& d2u_dr2) {
+      __enzyme_autodiff((void*)BSpline_functor_dudr_wrapper, qmcad::enzyme_const, DeltaRInv, qmcad::enzyme_const, cutoff_radius, qmcad::enzyme_const, SplineCoefs, qmcad::enzyme_const, A, qmcad::enzyme_out, r, qmcad::enzyme_dupnoneed, u, qmcad::enzyme_dup, du_dr, d2u_dr2);
       }
   }
 
@@ -78,9 +84,8 @@ namespace qmcplusplus
       dudr = d2udr2 = 0.0;
       return 0.0;
     }
-    dudr   = qmcad::BSpline_functor_dudr_wrapper(DeltaRInv, cutoff_radius, SplineCoefs, A, r);
-    d2udr2   = qmcad::BSpline_functor_d2udr2_wrapper(DeltaRInv, cutoff_radius, SplineCoefs, A, r);
-    return qmcad::BSpline_functor_evaluate_wrapper(DeltaRInv, cutoff_radius, SplineCoefs, A, r);
+    real_type u = 0.0;
+    qmcad::BSpline_functor_d2udr2_wrapper(DeltaRInv, cutoff_radius, SplineCoefs.data(), A, r, u, dudr, d2udr2);
     //return evaluate(r);
     // r *= DeltaRInv;
     // real_type ipart, t;
@@ -110,6 +115,7 @@ namespace qmcplusplus
     // clang-format on
   }
 
+  template struct BsplineFunctor<real_type >; 
   template struct BsplineFunctor<double >; 
   //BsplineFunctor<double>::evaluate(double r, double& dudr, double& d2udr2);
 } // namespace qmcplusplus

@@ -42,17 +42,13 @@
 namespace qmcplusplus
 {
  namespace qmcad{
-      inline int enzyme_dup;
-      inline int enzyme_dupnoneed;
-      inline int enzyme_out;
-      inline int enzyme_const;
  
       using real_type = OptimizableFunctorBase::real_type;
-      real_type BSpline_functor_evaluate_wrapper(const real_type& DeltaRInv, const real_type& cutoff_radius , const aligned_vector<real_type>& SplineCoefs, const TinyVector<real_type, 16>& A, const real_type& r);
+      void BSpline_functor_evaluate_wrapper(const real_type& DeltaRInv, const real_type& cutoff_radius , const real_type* SplineCoefs, const TinyVector<real_type, 16>& A, const real_type& r, real_type& u);
   
-      real_type BSpline_functor_dudr_wrapper(const real_type& DeltaRInv, const real_type& cutoff_radius , const aligned_vector<real_type>& SplineCoefs, const TinyVector<real_type, 16>& A, const real_type& r);
+      void BSpline_functor_dudr_wrapper(const real_type& DeltaRInv, const real_type& cutoff_radius , const real_type* SplineCoefs, const TinyVector<real_type, 16>& A, const real_type& r, real_type& u, real_type& du_dr);
   
-      real_type BSpline_functor_d2udr2_wrapper(const real_type& DeltaRInv, const real_type& cutoff_radius , const aligned_vector<real_type>& SplineCoefs, const TinyVector<real_type, 16>& A, const real_type& r);
+      void BSpline_functor_d2udr2_wrapper(const real_type& DeltaRInv, const real_type& cutoff_radius , const real_type* SplineCoefs, const TinyVector<real_type, 16>& A, const real_type& r, real_type& u, real_type& du_dr, real_type& d2u_dr2);
  }
 
 template<class T>
@@ -178,7 +174,9 @@ struct BsplineFunctor : public OptimizableFunctorBase
 
   inline real_type evaluate(real_type r)
   {
-    return qmcad::BSpline_functor_evaluate_wrapper(DeltaRInv, cutoff_radius, SplineCoefs, A, r);
+    real_type u =0.0;
+    qmcad::BSpline_functor_evaluate_wrapper(DeltaRInv, cutoff_radius, SplineCoefs.data(), A, r, u);
+    return u;
     // if (r >= cutoff_radius)
     //   return 0.0;
     // r *= DeltaRInv;
