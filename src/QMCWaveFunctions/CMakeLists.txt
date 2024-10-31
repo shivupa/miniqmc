@@ -20,5 +20,7 @@ endif(USE_OBJECT_TARGET)
 target_link_libraries(qmcwfs PUBLIC qmcparticle)
 
 target_link_libraries(qmcwfs PRIVATE platform_LA)
+target_link_libraries(qmcwfs INTERFACE Eigen3::Eigen)
+target_link_libraries(qmcwfs INTERFACE autodiff::autodiff)
 
 subdirs(tests)

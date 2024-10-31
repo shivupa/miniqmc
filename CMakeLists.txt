@@ -183,6 +183,22 @@ endif()
 #SET(ENABLE_PHDF5 0 CACHE BOOL "Enable phdf5 for output")
 #SET(HAVE_LIBHDF5 0)
 
+option(QMC_AD "Enable AD" ON)
+if(QMC_AD)
+  find_package(Eigen3 REQUIRED)
+  find_package(autodiff CONFIG REQUIRED)
+  # include(FetchContent)
+  # FetchContent_Declare(
+  #         autodiff
+  #         GIT_REPOSITORY https://github.com/autodiff/autodiff
+  #         GIT_TAG         v1.1.2 )
+  # set(AUTODIFF_BUILD_TESTS OFF)
+  # set(AUTODIFF_BUILD_PYTHON OFF)
+  # set(AUTODIFF_BUILD_EXAMPLES OFF)
+  # set(AUTODIFF_BUILD_PYTHON OFF)
+  # FetchContent_MakeAvailable(autodiff)
+endif()
+
 ######################################################
 # Git information (see src/CMakeLists.txt for the
 # command to get repository information)
