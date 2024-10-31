@@ -43,70 +43,68 @@
 
 namespace qmcplusplus
 {
- namespace qmcad{
- 
-      using namespace autodiff;
-      using Eigen::VectorXd;
-      using ad_real_type = var; //OptimizableFunctorBase::real_type;
+namespace qmcad
+{
 
-      inline ad_real_type BSpline_functor_evaluate_wrapper(
-        const ad_real_type& DeltaRInv, 
-        const ad_real_type& cutoff_radius , 
-        const ArrayXvar& SplineCoefs, 
-        const ArrayXvar& A, 
-        const ad_real_type& r
-      ) {
-          ad_real_type u = 0.0;
-          if (r >= cutoff_radius)
-            return u;
-          ad_real_type r_timesRinv = r * DeltaRInv;
-          double ipart, t;
-          t     = std::modf(val(r_timesRinv), &ipart);
-          int i = (int)ipart;
-          ad_real_type tp[4];
-          tp[0] = t * t * t;
-          tp[1] = t * t;
-          tp[2] = t;
-          tp[3] = 1.0;
-          u = 
-            (SplineCoefs[i+0]*(A[ 0]*tp[0] + A[ 1]*tp[1] + A[ 2]*tp[2] + A[ 3]*tp[3])+
-             SplineCoefs[i+1]*(A[ 4]*tp[0] + A[ 5]*tp[1] + A[ 6]*tp[2] + A[ 7]*tp[3])+
-             SplineCoefs[i+2]*(A[ 8]*tp[0] + A[ 9]*tp[1] + A[10]*tp[2] + A[11]*tp[3])+
-             SplineCoefs[i+3]*(A[12]*tp[0] + A[13]*tp[1] + A[14]*tp[2] + A[15]*tp[3]));
-          return u;
-      };
-  
-      inline void BSpline_functor_dudr_wrapper(
-        const ad_real_type& DeltaRInv, 
-        const ad_real_type& cutoff_radius , 
-        const ArrayXvar& SplineCoefs, 
-        const ArrayXvar& A, 
-        const ad_real_type& r,
-        ad_real_type& u, 
-        ad_real_type& out_du_dr
-      ) {
-        u = BSpline_functor_evaluate_wrapper(DeltaRInv, cutoff_radius, SplineCoefs, A, r);
-        auto [du_dr] = derivativesx(u, wrt(r));  // evaluate the first order derivatives of u
-        out_du_dr = du_dr;
-      };
-  
-      inline void BSpline_functor_d2udr2_wrapper(
-        const ad_real_type& DeltaRInv, 
-        const ad_real_type& cutoff_radius , 
-        const ArrayXvar& SplineCoefs, 
-        const ArrayXvar& A, 
-        const ad_real_type& r,
-        ad_real_type& u, 
-        ad_real_type& out_du_dr, 
-        ad_real_type& out_d2u_dr2){
-        u = BSpline_functor_evaluate_wrapper(DeltaRInv, cutoff_radius, SplineCoefs, A, r);
-        auto [du_dr] = derivativesx(u, wrt(r));  // evaluate the first order derivatives of u
-        auto [d2u_dr2] = derivativesx(du_dr, wrt(r)); 
-        out_du_dr = du_dr;
-        out_d2u_dr2 = d2u_dr2;
-      };
- }
-}
+using namespace autodiff;
+using Eigen::VectorXd;
+using ad_real_type = var; //OptimizableFunctorBase::real_type;
+
+inline ad_real_type BSpline_functor_evaluate_wrapper(const ad_real_type& DeltaRInv,
+                                                     const ad_real_type& cutoff_radius,
+                                                     const ArrayXvar& SplineCoefs,
+                                                     const ArrayXvar& A,
+                                                     const ad_real_type& r)
+{
+  ad_real_type u = 0.0;
+  if (r >= cutoff_radius)
+    return u;
+  ad_real_type r_timesRinv = r * DeltaRInv;
+  double ipart, t;
+  t     = std::modf(val(r_timesRinv), &ipart);
+  int i = (int)ipart;
+  ad_real_type tp[4];
+  tp[0] = t * t * t;
+  tp[1] = t * t;
+  tp[2] = t;
+  tp[3] = 1.0;
+  u     = (SplineCoefs[i + 0] * (A[0] * tp[0] + A[1] * tp[1] + A[2] * tp[2] + A[3] * tp[3]) +
+       SplineCoefs[i + 1] * (A[4] * tp[0] + A[5] * tp[1] + A[6] * tp[2] + A[7] * tp[3]) +
+       SplineCoefs[i + 2] * (A[8] * tp[0] + A[9] * tp[1] + A[10] * tp[2] + A[11] * tp[3]) +
+       SplineCoefs[i + 3] * (A[12] * tp[0] + A[13] * tp[1] + A[14] * tp[2] + A[15] * tp[3]));
+  return u;
+};
+
+inline void BSpline_functor_dudr_wrapper(const ad_real_type& DeltaRInv,
+                                         const ad_real_type& cutoff_radius,
+                                         const ArrayXvar& SplineCoefs,
+                                         const ArrayXvar& A,
+                                         const ad_real_type& r,
+                                         ad_real_type& u,
+                                         ad_real_type& out_du_dr)
+{
+  u            = BSpline_functor_evaluate_wrapper(DeltaRInv, cutoff_radius, SplineCoefs, A, r);
+  auto [du_dr] = derivativesx(u, wrt(r)); // evaluate the first order derivatives of u
+  out_du_dr    = du_dr;
+};
+
+inline void BSpline_functor_d2udr2_wrapper(const ad_real_type& DeltaRInv,
+                                           const ad_real_type& cutoff_radius,
+                                           const ArrayXvar& SplineCoefs,
+                                           const ArrayXvar& A,
+                                           const ad_real_type& r,
+                                           ad_real_type& u,
+                                           ad_real_type& out_du_dr,
+                                           ad_real_type& out_d2u_dr2)
+{
+  u              = BSpline_functor_evaluate_wrapper(DeltaRInv, cutoff_radius, SplineCoefs, A, r);
+  auto [du_dr]   = derivativesx(u, wrt(r)); // evaluate the first order derivatives of u
+  auto [d2u_dr2] = derivativesx(du_dr, wrt(r));
+  out_du_dr      = du_dr;
+  out_d2u_dr2    = d2u_dr2;
+};
+} // namespace qmcad
+} // namespace qmcplusplus
 
 namespace qmcplusplus
 {
@@ -233,28 +231,26 @@ struct BsplineFunctor : public OptimizableFunctorBase
 
   inline real_type evaluate(real_type r)
   {
-      using namespace autodiff;
-      using Eigen::VectorXd;
+    using namespace autodiff;
+    using Eigen::VectorXd;
 
     VectorXvar ad_splinecoefs(SplineCoefs.size());
-    for (auto val : SplineCoefs){
+    for (auto val : SplineCoefs)
+    {
       ad_splinecoefs << val;
     }
     VectorXvar ad_A(16);
-    for (auto i = 0; i < 16; i++){
+    for (auto i = 0; i < 16; i++)
+    {
       ad_A << A[i];
     }
-    var ad_r = r;
-    var ad_DeltaRInv = DeltaRInv;
+    var ad_r             = r;
+    var ad_DeltaRInv     = DeltaRInv;
     var ad_cutoff_radius = cutoff_radius;
 
     var ad_u = 0.0;
 
-    ad_u = qmcad::BSpline_functor_evaluate_wrapper(ad_DeltaRInv, 
-                                          ad_cutoff_radius, 
-                                          ad_splinecoefs, 
-                                          ad_A, 
-                                          ad_r);
+    ad_u = qmcad::BSpline_functor_evaluate_wrapper(ad_DeltaRInv, ad_cutoff_radius, ad_splinecoefs, ad_A, ad_r);
 
     real_type u = val(ad_u);
     return u;
@@ -262,36 +258,32 @@ struct BsplineFunctor : public OptimizableFunctorBase
 
   inline real_type evaluate(real_type r, real_type& dudr, real_type& d2udr2)
   {
-      using namespace autodiff;
-      using Eigen::VectorXd;
+    using namespace autodiff;
+    using Eigen::VectorXd;
 
     VectorXvar ad_splinecoefs(SplineCoefs.size());
-    for (auto val : SplineCoefs){
+    for (auto val : SplineCoefs)
+    {
       ad_splinecoefs << val;
     }
     VectorXvar ad_A(16);
-    for (auto i = 0; i < 16; i++){
+    for (auto i = 0; i < 16; i++)
+    {
       ad_A << A[i];
     }
-    var ad_r = r;
-    var ad_DeltaRInv = DeltaRInv;
+    var ad_r             = r;
+    var ad_DeltaRInv     = DeltaRInv;
     var ad_cutoff_radius = cutoff_radius;
 
-    var ad_u = 0.0;
-    var ad_dudr = 0.0;
+    var ad_u      = 0.0;
+    var ad_dudr   = 0.0;
     var ad_d2udr2 = 0.0;
 
-    qmcad::BSpline_functor_d2udr2_wrapper(ad_DeltaRInv, 
-                                          ad_cutoff_radius, 
-                                          ad_splinecoefs, 
-                                          ad_A, 
-                                          ad_r, 
-                                          ad_u, 
-                                          ad_dudr, 
+    qmcad::BSpline_functor_d2udr2_wrapper(ad_DeltaRInv, ad_cutoff_radius, ad_splinecoefs, ad_A, ad_r, ad_u, ad_dudr,
                                           ad_d2udr2);
     real_type u = val(ad_u);
-    dudr = val(ad_dudr);
-    d2udr2 = val(ad_d2udr2);
+    dudr        = val(ad_dudr);
+    d2udr2      = val(ad_d2udr2);
     return u;
   }
 };
@@ -376,7 +368,7 @@ inline void BsplineFunctor<T>::evaluateVGL(const int iat,
     }
   }
 
-  #pragma omp simd
+#pragma omp simd
   for (int j = 0; j < iCount; j++)
   {
     real_type r    = distArrayCompressed[j];
