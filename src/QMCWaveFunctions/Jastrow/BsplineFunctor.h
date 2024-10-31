@@ -48,8 +48,8 @@ namespace qmcad
 
 using namespace autodiff;
 using Eigen::VectorXd;
-using ad_real_type = var; 
-using real_type = OptimizableFunctorBase::real_type;
+using ad_real_type = var;
+using real_type    = OptimizableFunctorBase::real_type;
 
 inline ad_real_type BSpline_functor_evaluate_wrapper(const ad_real_type& DeltaRInv,
                                                      const ad_real_type& cutoff_radius,
